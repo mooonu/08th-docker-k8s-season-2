@@ -3,7 +3,7 @@
 ## RA ( [Reference Architecture](https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengnetworkconfigexample.htm#example-oci-cni-privatek8sapi_privateworkers_publiclb) )
 <img width="1076" height="600" alt="image" src="https://github.com/user-attachments/assets/7c985395-abe8-4604-8414-60853fc4cc5a" />
 
-해당 아키텍처를 기반으로 AWS의 리소스를 활용하여 구현 단, OKE와 같은 EKS 리소스가 아닌 직접 클러스터 구축 (k8s 공식문서 가이드)
+해당 아키텍처를 기반으로 AWS의 리소스를 활용하여 구현 단, OKE와 같은 EKS 리소스가 아닌 직접 클러스터 인프라 환경 성
 
 # AWS Resource Architecture
 # VPN 구성 정보
@@ -17,7 +17,7 @@
 | **Internet Gateway** | internet-gateway-0 |
 | **NAT Gateway** | nat-gateway-0 |
 | **Service Gateway** | service-gateway-0 |
-| **VPC Endpoints** | All relevant AWS Services via Gateway/Interface Endpoints |
+| **VPC Endpoints** | All relevant AWS Services via Gateway/Interface Endpoints (초기구성 시 필요 서비스만 지정 (s3)) |
 | **DHCP Options** | Default DHCP Option Set |
 
 # Subnet 구성 정보
@@ -29,7 +29,7 @@
 | **Name** | KubernetesAPIendpoint |
 | **Type** | Regional |
 | **CIDR Block** | 172.31.0.0/29 |
-| **Route Table** | rt-KubernetesAPIendpoint |
+| **Route Table** | rtb-KubernetesAPIendpoint |
 | **Subnet Access** | Private |
 | **DNS Resolution** | Selected |
 | **DHCP Options** | Default |
@@ -44,7 +44,7 @@
 | **Name** | workernodes |
 | **Type** | Regional |
 | **CIDR Block** | 172.31.1.0/24 |
-| **Route Table** | rt-workernodes |
+| **Route Table** | rtb-workernodes |
 | **Subnet Access** | Private |
 | **DNS Resolution** | Selected |
 | **DHCP Options** | Default |
@@ -59,7 +59,7 @@
 | **Name** | pods |
 | **Type** | Regional |
 | **CIDR Block** | 172.31.32.0/19 |
-| **Route Table** | rt-pods |
+| **Route Table** | rtb-pods |
 | **Subnet Access** | Private |
 | **DNS Resolution** | Selected |
 | **DHCP Options** | Default |
@@ -74,7 +74,7 @@
 | **Name** | loadbalancers |
 | **Type** | Regional |
 | **CIDR Block** | 172.31.2.0/24 |
-| **Route Table** | routetable-serviceloadbalancers |
+| **Route Table** | rtb-loadbalancers |
 | **Subnet Access** | Public |
 | **DNS Resolution** | Selected |
 | **DHCP Options** | Default |
@@ -176,6 +176,8 @@
 | 172.31.1.0/24         | TCP      | 10250 | API Server → Worker (kubelet API) |
 | 172.31.1.0/24         | ICMP     | 3,4   | Path MTU Discovery                |
 | 172.31.32.0/19        | ALL      | ALL   | API Server → Pods                 |
+| 172.31.3.0/24  | ssh      | 22       | bastion to ssh                   |
+
 
 ## sg-worker-nodes
 
@@ -187,6 +189,8 @@
 | Bastion CIDR | TCP      | 22          | (Optional) SSH to Worker Nodes    |
 | 172.31.2.0/24  | ALL      | 30000–32767 | Load balancer → NodePorts         |
 | 172.31.2.0/24  | ALL      | 10256       | LB → kube-proxy                   |
+| 172.31.3.0/24  | ssh      | 22       | bastion to ssh                   |
+
 
 ### Egress
 | Destination         | Protocol | Port  | Description                |
