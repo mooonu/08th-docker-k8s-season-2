@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmap-1-2
+spec:
+  containers:
+  - name: configmap-1-2
+    image: busybox
+    args: ['tail', '-f', '/dev/null']
+    env:
+    - name: MY_CAT  # 새롭게 정의될 환경변수 이름
+      valueFrom:
+        configMapKeyRef:
+          name: pet  # 참조할 ConfigMap 이름
+          key: cat  # 해당 ConfigMap에 정의된 변수의 이름(키)

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmap-2-2
+spec:
+  containers:
+  - name: configmap-2-2
+    image: busybox
+    args: ['tail', '-f', '/dev/null']
+    volumeMounts:
+    - name: configmap-volume  # volumes[].name과 맞춰주기
+      mountPath: /etc/config
+  volumes:
+  - name: configmap-volume  # volumeMounts[].name과 맞춰주기
+    configMap:
+      name: pet  # 참조할 ConfigMap 이름
+      items:
+      - key: cat  # 해당 ConfigMap에 정의된 변수의 이름(키)
+        path: my_cat  # 저장될 파일의 이름
